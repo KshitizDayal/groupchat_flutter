@@ -55,7 +55,7 @@ class _NewGroupState extends State<NewGroup> {
     });
     await _firestore
         .collection("users")
-        .where("email", isEqualTo: _search.text)
+        .where("name", isEqualTo: _search.text)
         .get()
         .then((value) {
       setState(() {

@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:groupchat/appcolor.dart';
+import 'package:groupchat/conversationlist.dart';
 import 'package:groupchat/groups/group_chat_screen.dart';
 import 'package:groupchat/groups/new_group.dart';
+import 'package:groupchat/listview_homepage.dart';
 import 'package:groupchat/login/signup/welcome_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List groupList = [];
 
+  List docSnap = [];
+  List grpid = [];
+
   @override
   void initState() {
     super.initState();
@@ -44,9 +49,19 @@ class _HomeScreenState extends State<HomeScreen> {
         .then((value) {
       setState(() {
         groupList = value.docs;
+
         isLoading = false;
       });
     });
+  }
+
+  void getNameDate() async {
+    for (int i = 0; i < groupList.length; i++) {
+      grpid = groupList[i]['id'];
+      await _firestore.collection('groups').doc(grpid[i]).get().then((value) {
+        docSnap = value.data as List;
+      });
+    }
   }
 
   @override
@@ -72,8 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: isLoading
           ? Container(
-              height: size.height,
-              width: size.width,
               alignment: Alignment.center,
               child: CircularProgressIndicator(),
             )
@@ -97,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: groupList.length,
                         itemBuilder: (context, index) {
-                          return ListTile(
+                          return GestureDetector(
                             onTap: () => Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => GroupChatScreen(
@@ -106,9 +119,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            leading: Icon(Icons.group),
-                            title: Text(groupList[index]['name']),
+                            child: ListViewHomePage(
+                              name: groupList[index]['name'],
+                              id: groupList[index]['id'],
+                            ),
                           );
+                          // ListTile(
+                          //   onTap: () => Navigator.of(context).push(
+                          //     MaterialPageRoute(
+                          //       builder: (_) => GroupChatScreen(
+                          //         groupName: groupList[index]['name'],
+                          //         groupChatId: groupList[index]['id'],
+                          //       ),
+                          //     ),
+                          //   ),
+                          //   leading: Icon(Icons.group),
+                          //   title: Text(groupList[index]['name']),
+                          // );
                         }),
                   ),
                 ],

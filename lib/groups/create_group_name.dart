@@ -26,12 +26,15 @@ class _CreateGroupNameState extends State<CreateGroupName> {
     setState(() {
       isLoading = true;
     });
-    String groupId = Uuid().v1();
+    String groupId = const Uuid().v1();
 
     await _firestore.collection('groups').doc(groupId).set({
       "uid": groupId,
       "name": _groupName.text,
       "members": widget.memberList,
+      "lastMessage": "",
+      "lastMessageSendTs": "",
+      "lastMessageSendBy": "",
     });
 
     for (int i = 0; i < widget.memberList.length; i++) {
@@ -45,6 +48,9 @@ class _CreateGroupNameState extends State<CreateGroupName> {
           .set({
         "name": _groupName.text,
         "id": groupId,
+        "lastMessage": "",
+        "lastMessageSendTs": "",
+        "lastMessageSendBy": "",
       });
 
       // String memberid = groupId;
@@ -56,7 +62,8 @@ class _CreateGroupNameState extends State<CreateGroupName> {
     await _firestore.collection('groups').doc(groupId).collection('chats').add({
       "message": "${_auth.currentUser!.displayName} Created This Group.",
       "type": "notify",
-      "time": FieldValue.serverTimestamp(),
+      "time": DateTime.now(),
+      "sendBy": "",
     });
 
     Navigator.of(context).push(
